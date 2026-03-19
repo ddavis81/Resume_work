@@ -74,7 +74,7 @@ const Editor = () => {
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FileText className="w-8 h-8 text-blue-600" />
-            <span className="text-2xl font-bold text-slate-900">CareerCraft</span>
+            <span className="text-2xl font-bold text-slate-900">Resume works</span>
           </div>
           <div className="flex items-center gap-3">
             <Button

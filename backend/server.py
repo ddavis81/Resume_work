@@ -27,7 +27,7 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-app = FastAPI(title="CareerCraft - Resume & Job Matching API")
+app = FastAPI(title="Resume works - Resume & Job Matching API")
 api_router = APIRouter(prefix="/api")
 
 logging.basicConfig(
@@ -231,7 +231,7 @@ def calculate_skill_match(user_skills: List[SkillInput], job_description: str) -
 # API Endpoints
 @api_router.get("/")
 async def root():
-    return {"message": "CareerCraft API", "version": "1.0.0"}
+    return {"message": "Resume works API", "version": "1.0.0"}
 
 @api_router.post("/resume/create")
 async def create_resume(resume_data: ResumeData, user_id: str = "default"):

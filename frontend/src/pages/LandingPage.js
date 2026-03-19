@@ -41,7 +41,7 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FileText className="w-8 h-8 text-blue-500" />
-            <span className="text-2xl font-bold">CareerCraft</span>
+            <span className="text-2xl font-bold">Resume works</span>
           </div>
           <div className="flex items-center gap-4">
             <Link to="/templates">
@@ -141,7 +141,7 @@ const LandingPage = () => {
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">Ready to Land Your Dream Job?</h2>
           <p className="text-xl text-blue-100 mb-8">
-            Join thousands of professionals who've transformed their careers with CareerCraft
+            Join thousands of professionals who've transformed their careers with Resume works
           </p>
           <Link to="/builder">
             <Button data-testid="cta-start-btn" size="lg" className="bg-white text-blue-600 hover:bg-slate-100 text-lg px-8 py-6">
@@ -156,9 +156,9 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto text-center text-slate-400">
           <div className="flex items-center justify-center gap-2 mb-4">
             <FileText className="w-6 h-6 text-blue-500" />
-            <span className="text-xl font-bold text-white">CareerCraft</span>
+            <span className="text-xl font-bold text-white">Resume works</span>
           </div>
-          <p>© 2026 CareerCraft. Powered by AI. Built for Success.</p>
+          <p>© 2026 Resume works. Powered by AI. Built for Success.</p>
         </div>
       </footer>
     </div>

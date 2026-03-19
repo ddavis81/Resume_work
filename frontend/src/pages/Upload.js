@@ -62,7 +62,7 @@ const Upload = () => {
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FileText className="w-8 h-8 text-blue-500" />
-            <span className="text-2xl font-bold text-white">CareerCraft</span>
+            <span className="text-2xl font-bold text-white">Resume works</span>
           </div>
           <Button variant="ghost" onClick={() => navigate("/")} data-testid="back-home-btn" className="text-slate-300 hover:text-white">
             <ArrowLeft className="mr-2 w-4 h-4" /> Back to Home
