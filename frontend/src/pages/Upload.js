@@ -25,7 +25,11 @@ const Upload = () => {
     onDrop,
     accept: {
       'application/pdf': ['.pdf'],
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx']
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+      'application/msword': ['.doc'],
+      'text/plain': ['.txt'],
+      'application/rtf': ['.rtf'],
+      'text/rtf': ['.rtf']
     },
     maxFiles: 1
   });
@@ -120,7 +124,7 @@ const Upload = () => {
                         {isDragActive ? "Drop your resume here" : "Drag & drop your resume"}
                       </p>
                       <p className="text-slate-400 text-sm mt-2">or click to browse files</p>
-                      <p className="text-slate-500 text-xs mt-2">Supports PDF and DOCX (max 10MB)</p>
+                      <p className="text-slate-500 text-xs mt-2">Supports PDF, DOC, DOCX, TXT, RTF (max 10MB)</p>
                     </div>
                   </>
                 )}
@@ -142,6 +146,39 @@ const Upload = () => {
             )}
 
             <div className="mt-8 p-4 rounded-lg bg-slate-950 border border-slate-800">
+              <h4 className="text-white font-semibold mb-3">Supported File Formats</h4>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+                <div className="flex items-center gap-2 text-sm">
+                  <div className="w-8 h-8 bg-red-500/20 rounded flex items-center justify-center">
+                    <span className="text-red-400 font-bold text-xs">PDF</span>
+                  </div>
+                  <span className="text-slate-400">PDF Files</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <div className="w-8 h-8 bg-blue-500/20 rounded flex items-center justify-center">
+                    <span className="text-blue-400 font-bold text-xs">DOC</span>
+                  </div>
+                  <span className="text-slate-400">Word 97-03</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <div className="w-8 h-8 bg-blue-500/20 rounded flex items-center justify-center">
+                    <span className="text-blue-400 font-bold text-xs">DOCX</span>
+                  </div>
+                  <span className="text-slate-400">Word Modern</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <div className="w-8 h-8 bg-slate-500/20 rounded flex items-center justify-center">
+                    <span className="text-slate-400 font-bold text-xs">TXT</span>
+                  </div>
+                  <span className="text-slate-400">Plain Text</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <div className="w-8 h-8 bg-purple-500/20 rounded flex items-center justify-center">
+                    <span className="text-purple-400 font-bold text-xs">RTF</span>
+                  </div>
+                  <span className="text-slate-400">Rich Text</span>
+                </div>
+              </div>
               <h4 className="text-white font-semibold mb-3">What happens next?</h4>
               <ul className="space-y-2 text-slate-400 text-sm">
                 <li className="flex items-start gap-2">

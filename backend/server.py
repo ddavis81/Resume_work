@@ -14,6 +14,7 @@ import httpx
 import fitz
 from docx import Document
 import io
+import olefile
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
@@ -129,6 +130,60 @@ def extract_text_from_docx(file_bytes: bytes) -> str:
     except Exception as e:
         logger.error(f"DOCX extraction error: {str(e)}")
         raise HTTPException(status_code=400, detail="Failed to extract text from DOCX")
+
+def extract_text_from_doc(file_bytes: bytes) -> str:
+    """Extract text from older .doc format using olefile"""
+    try:
+        ole = olefile.OleFileIO(file_bytes)
+        
+        # Try to extract text from WordDocument stream
+        if ole.exists('WordDocument'):
+            data = ole.openstream('WordDocument').read()
+            # Simple text extraction (may not be perfect for all .doc files)
+            text = data.decode('latin-1', errors='ignore')
+            # Clean up the text
+            import re
+            text = re.sub(r'[^\x20-\x7E\n]', '', text)
+            return text
+        else:
+            raise HTTPException(status_code=400, detail="Invalid .doc file format")
+    except Exception as e:
+        logger.error(f"DOC extraction error: {str(e)}")
+        # Fallback: try to read as plain text
+        try:
+            text = file_bytes.decode('latin-1', errors='ignore')
+            import re
+            text = re.sub(r'[^\x20-\x7E\n]', '', text)
+            return text
+        except:
+            raise HTTPException(status_code=400, detail="Failed to extract text from DOC")
+
+def extract_text_from_txt(file_bytes: bytes) -> str:
+    """Extract text from plain text files"""
+    try:
+        # Try UTF-8 first, then fall back to latin-1
+        try:
+            return file_bytes.decode('utf-8')
+        except UnicodeDecodeError:
+            return file_bytes.decode('latin-1', errors='ignore')
+    except Exception as e:
+        logger.error(f"TXT extraction error: {str(e)}")
+        raise HTTPException(status_code=400, detail="Failed to extract text from TXT")
+
+def extract_text_from_rtf(file_bytes: bytes) -> str:
+    """Extract text from RTF files (basic extraction)"""
+    try:
+        text = file_bytes.decode('latin-1', errors='ignore')
+        # Remove RTF control codes
+        import re
+        # Remove RTF header
+        text = re.sub(r'\\[a-z]+\d*\s?', ' ', text)
+        text = re.sub(r'[{}]', '', text)
+        text = re.sub(r'\s+', ' ', text)
+        return text.strip()
+    except Exception as e:
+        logger.error(f"RTF extraction error: {str(e)}")
+        raise HTTPException(status_code=400, detail="Failed to extract text from RTF")
 
 async def parse_resume_with_ai(text: str) -> Dict[str, Any]:
     chat = await get_llm_chat()
@@ -274,16 +329,30 @@ async def create_resume(resume_data: ResumeData, user_id: str = "default"):
 async def upload_resume(file: UploadFile = File(...), user_id: str = Form("default")):
     try:
         file_bytes = await file.read()
+        filename_lower = file.filename.lower()
         
-        if file.filename.endswith('.pdf'):
+        # Determine file type and extract text
+        if filename_lower.endswith('.pdf'):
             text = extract_text_from_pdf(file_bytes)
-        elif file.filename.endswith('.docx'):
+        elif filename_lower.endswith('.docx'):
             text = extract_text_from_docx(file_bytes)
+        elif filename_lower.endswith('.doc'):
+            text = extract_text_from_doc(file_bytes)
+        elif filename_lower.endswith('.txt'):
+            text = extract_text_from_txt(file_bytes)
+        elif filename_lower.endswith('.rtf'):
+            text = extract_text_from_rtf(file_bytes)
         else:
-            raise HTTPException(status_code=400, detail="Only PDF and DOCX files are supported")
+            raise HTTPException(
+                status_code=400, 
+                detail="Unsupported file format. Please upload PDF, DOC, DOCX, TXT, or RTF files."
+            )
         
         if not text or len(text.strip()) < 50:
-            raise HTTPException(status_code=400, detail="Could not extract sufficient text from the file")
+            raise HTTPException(
+                status_code=400, 
+                detail="Could not extract sufficient text from the file. Please ensure the file contains readable text."
+            )
         
         parsed_data = await parse_resume_with_ai(text)
         
