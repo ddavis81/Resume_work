@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
 import { toast } from "sonner";
 
@@ -15,6 +16,7 @@ const API = `${BACKEND_URL}/api`;
 
 const Builder = () => {
   const navigate = useNavigate();
+  const { token } = useAuth();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
 
@@ -87,12 +89,19 @@ const Builder = () => {
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      const response = await axios.post(`${API}/resume/create`, formData);
+      const response = await axios.post(`${API}/resume/create`, formData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       toast.success("Resume created successfully!");
       navigate(`/editor/${response.data.id}`);
     } catch (error) {
       console.error(error);
-      toast.error("Failed to create resume");
+      if (error.response?.status === 401) {
+        toast.error("Please sign in to create a resume");
+        navigate("/");
+      } else {
+        toast.error("Failed to create resume");
+      }
     } finally {
       setLoading(false);
     }

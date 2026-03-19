@@ -1,9 +1,14 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { FileText, Sparkles, Briefcase, ArrowRight, Upload, PenTool, CheckCircle } from "lucide-react";
+import { FileText, Sparkles, Briefcase, ArrowRight, Upload, PenTool, CheckCircle, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/context/AuthContext";
+import AuthModal from "@/components/AuthModal";
 
 const LandingPage = () => {
+  const { user, logout, isAuthenticated } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const features = [
     {
       icon: <PenTool className="w-8 h-8" />,
@@ -49,11 +54,37 @@ const LandingPage = () => {
                 Templates
               </Button>
             </Link>
-            <Link to="/builder">
-              <Button data-testid="nav-get-started-btn" className="bg-blue-600 hover:bg-blue-700 glow-button">
-                Get Started
-              </Button>
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <span className="text-slate-300 text-sm">Hi, {user?.full_name}</span>
+                <Button
+                  onClick={logout}
+                  variant="outline"
+                  className="border-slate-700 text-slate-300"
+                  data-testid="logout-btn"
+                >
+                  <LogOut className="w-4 h-4 mr-2" /> Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  onClick={() => setShowAuthModal(true)}
+                  variant="ghost"
+                  className="text-slate-300 hover:text-white"
+                  data-testid="login-btn"
+                >
+                  <User className="w-4 h-4 mr-2" /> Sign In
+                </Button>
+                <Button
+                  onClick={() => setShowAuthModal(true)}
+                  data-testid="nav-get-started-btn"
+                  className="bg-blue-600 hover:bg-blue-700 glow-button"
+                >
+                  Get Started
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -161,6 +192,8 @@ const LandingPage = () => {
           <p>© 2026 Resume works. Powered by AI. Built for Success.</p>
         </div>
       </footer>
+
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
   );
 };

@@ -1,15 +1,16 @@
-from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Form
+from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Form, Depends, status
 from fastapi.responses import Response
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from typing import List, Optional, Dict, Any
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import httpx
 import fitz
 from docx import Document
@@ -20,9 +21,19 @@ from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 import re
+from passlib.context import CryptContext
+import jwt
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
+
+# Security
+SECRET_KEY = os.environ.get('SECRET_KEY', 'your-secret-key-change-in-production-2024')
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+security = HTTPBearer()
 
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
@@ -38,6 +49,27 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Models
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str = Field(..., min_length=6)
+    full_name: str = Field(..., min_length=1)
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class User(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    email: EmailStr
+    full_name: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+    user: User
+
 class SkillInput(BaseModel):
     name: str
     proficiency: Optional[str] = "intermediate"
@@ -103,6 +135,41 @@ class ImproveRequest(BaseModel):
     section: str = "all"
 
 # Helper Functions
+# Helper Functions
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password: str) -> str:
+    return pwd_context.hash(password)
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.now(timezone.utc) + expires_delta
+    else:
+        expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> User:
+    try:
+        token = credentials.credentials
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token has expired")
+    except jwt.JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    user = await db.users.find_one({"id": user_id}, {"_id": 0, "password": 0})
+    if user is None:
+        raise HTTPException(status_code=401, detail="User not found")
+    
+    return User(**user)
+
 async def get_llm_chat():
     api_key = os.environ.get('EMERGENT_LLM_KEY')
     return LlmChat(
@@ -311,10 +378,63 @@ def calculate_skill_match(user_skills: List[SkillInput], job_description: str) -
 async def root():
     return {"message": "Resume works API", "version": "1.0.0"}
 
+@api_router.post("/auth/register", response_model=Token)
+async def register(user_data: UserCreate):
+    # Check if user already exists
+    existing_user = await db.users.find_one({"email": user_data.email})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    # Create new user
+    hashed_password = get_password_hash(user_data.password)
+    user = User(
+        email=user_data.email,
+        full_name=user_data.full_name
+    )
+    
+    user_dict = user.model_dump()
+    user_dict['password'] = hashed_password
+    user_dict['created_at'] = user_dict['created_at'].isoformat()
+    
+    await db.users.insert_one(user_dict)
+    
+    # Create access token
+    access_token = create_access_token(data={"sub": user.id})
+    
+    return Token(access_token=access_token, token_type="bearer", user=user)
+
+@api_router.post("/auth/login", response_model=Token)
+async def login(credentials: UserLogin):
+    # Find user
+    user_doc = await db.users.find_one({"email": credentials.email})
+    if not user_doc:
+        raise HTTPException(status_code=401, detail="Incorrect email or password")
+    
+    # Verify password
+    if not verify_password(credentials.password, user_doc['password']):
+        raise HTTPException(status_code=401, detail="Incorrect email or password")
+    
+    # Create user object (exclude password)
+    user = User(
+        id=user_doc['id'],
+        email=user_doc['email'],
+        full_name=user_doc['full_name'],
+        created_at=datetime.fromisoformat(user_doc['created_at']) if isinstance(user_doc['created_at'], str) else user_doc['created_at']
+    )
+    
+    # Create access token
+    access_token = create_access_token(data={"sub": user.id})
+    
+    return Token(access_token=access_token, token_type="bearer", user=user)
+
+@api_router.get("/auth/me", response_model=User)
+async def get_me(current_user: User = Depends(get_current_user)):
+    return current_user
+
 @api_router.post("/resume/create")
-async def create_resume(resume_data: ResumeData, user_id: str = "default"):
+async def create_resume(resume_data: ResumeData, current_user: User = Depends(get_current_user)):
     resume = Resume(
-        user_id=user_id,
+        user_id=current_user.id,
         data=resume_data
     )
     
