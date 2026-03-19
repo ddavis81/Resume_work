@@ -194,7 +194,10 @@ const LandingPage = () => {
             <FileText className="w-6 h-6 text-blue-500" />
             <span className="text-xl font-bold text-white">Resume works</span>
           </div>
-          <p>© 2026 Resume works. Powered by AI. Built for Success.</p>
+          <p className="mb-2">© 2026 Resume works. Powered by AI. Built for Success.</p>
+          <p className="text-sm text-slate-500">
+            Created by <span className="text-blue-400 font-semibold">Your Name</span>
+          </p>
         </div>
       </footer>
 
