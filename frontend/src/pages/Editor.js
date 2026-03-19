@@ -15,6 +15,7 @@ const Editor = () => {
   const [resume, setResume] = useState(null);
   const [loading, setLoading] = useState(true);
   const [improving, setImproving] = useState(false);
+  const [autoFixing, setAutoFixing] = useState(false);
   const [suggestions, setSuggestions] = useState(null);
 
   useEffect(() => {
@@ -50,6 +51,24 @@ const Editor = () => {
     }
   };
 
+  const autoFix = async () => {
+    setAutoFixing(true);
+    try {
+      const response = await axios.post(`${API}/resume/autofix`, {
+        resume_id: id
+      });
+      toast.success(`Auto-fixed ${response.data.improved_count} sections!`);
+      // Reload resume to show improvements
+      await loadResume();
+      setSuggestions("✨ Resume has been automatically improved with AI-powered enhancements!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to auto-fix resume");
+    } finally {
+      setAutoFixing(false);
+    }
+  };
+
   const findJobs = () => {
     navigate(`/jobs?resume_id=${id}`);
   };
@@ -78,13 +97,22 @@ const Editor = () => {
           </div>
           <div className="flex items-center gap-3">
             <Button
-              onClick={improveResume}
-              disabled={improving}
-              className="bg-blue-600 hover:bg-blue-700"
-              data-testid="improve-btn"
+              onClick={autoFix}
+              disabled={autoFixing}
+              className="bg-emerald-600 hover:bg-emerald-700"
+              data-testid="autofix-btn"
             >
               <Sparkles className="w-4 h-4 mr-2" />
-              {improving ? "Analyzing..." : "AI Improve"}
+              {autoFixing ? "Auto-Fixing..." : "Auto Fix"}
+            </Button>
+            <Button
+              onClick={improveResume}
+              disabled={improving}
+              variant="outline"
+              className="border-blue-600 text-blue-600 hover:bg-blue-50"
+              data-testid="improve-btn"
+            >
+              {improving ? "Analyzing..." : "Get Suggestions"}
             </Button>
             <Button
               onClick={findJobs}
@@ -207,20 +235,31 @@ const Editor = () => {
             ) : (
               <Card className="bg-white shadow-lg">
                 <CardContent className="p-8 text-center">
-                  <Sparkles className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-slate-900 mb-2">Get AI-Powered Improvements</h3>
-                  <p className="text-slate-600 mb-4">
-                    Click "AI Improve" to get personalized suggestions to enhance your resume
+                  <Sparkles className="w-12 h-12 text-emerald-500 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-slate-900 mb-2">AI-Powered Improvements</h3>
+                  <p className="text-slate-600 mb-6">
+                    Choose how you want to improve your resume
                   </p>
-                  <Button
-                    onClick={improveResume}
-                    disabled={improving}
-                    className="bg-blue-600 hover:bg-blue-700"
-                    data-testid="improve-cta-btn"
-                  >
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    Improve My Resume
-                  </Button>
+                  <div className="space-y-3">
+                    <Button
+                      onClick={autoFix}
+                      disabled={autoFixing}
+                      className="w-full bg-emerald-600 hover:bg-emerald-700"
+                      data-testid="autofix-cta-btn"
+                    >
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      {autoFixing ? "Auto-Fixing..." : "Auto Fix (Apply AI Improvements)"}
+                    </Button>
+                    <Button
+                      onClick={improveResume}
+                      disabled={improving}
+                      variant="outline"
+                      className="w-full border-blue-600 text-blue-600 hover:bg-blue-50"
+                      data-testid="improve-cta-btn"
+                    >
+                      {improving ? "Analyzing..." : "Get Suggestions Only"}
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             )}

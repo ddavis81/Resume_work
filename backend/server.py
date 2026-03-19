@@ -94,6 +94,9 @@ class JobMatch(BaseModel):
     match_percentage: float
     url: str
 
+class AutoFixRequest(BaseModel):
+    resume_id: str
+
 class ImproveRequest(BaseModel):
     resume_id: str
     section: str = "all"
@@ -330,6 +333,66 @@ async def improve_resume(request: ImproveRequest):
     
     suggestions = await improve_resume_section(resume['data'], request.section)
     return {"suggestions": suggestions}
+
+@api_router.post("/resume/autofix")
+async def autofix_resume(request: AutoFixRequest):
+    resume = await db.resumes.find_one({"id": request.resume_id}, {"_id": 0})
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+    
+    chat = await get_llm_chat()
+    
+    # Get improved summary
+    summary_prompt = f"""Rewrite this professional summary to be more impactful, ATS-friendly, and achievement-focused. 
+Current summary: {resume['data'].get('summary', '')}
+Role: {resume['data'].get('title', '')}
+
+Provide ONLY the improved summary text, maximum 3-4 sentences."""
+    
+    summary_msg = UserMessage(text=summary_prompt)
+    improved_summary = await chat.send_message(summary_msg)
+    
+    # Get improved experience descriptions
+    improved_experiences = []
+    for exp in resume['data'].get('experience', []):
+        exp_prompt = f"""Rewrite this job description using strong action verbs and quantifiable achievements:
+
+Job Title: {exp.get('title')}
+Company: {exp.get('company')}
+Current Description: {exp.get('description')}
+
+Provide ONLY the improved description in 2-3 bullet points."""
+        
+        exp_msg = UserMessage(text=exp_prompt)
+        improved_desc = await chat.send_message(exp_msg)
+        
+        improved_experiences.append({
+            "title": exp.get('title'),
+            "company": exp.get('company'),
+            "duration": exp.get('duration'),
+            "description": improved_desc.strip()
+        })
+    
+    # Update resume with improvements
+    resume['data']['summary'] = improved_summary.strip()
+    resume['data']['experience'] = improved_experiences
+    resume['updated_at'] = datetime.now(timezone.utc).isoformat()
+    
+    # Save to database
+    await db.resumes.update_one(
+        {"id": request.resume_id},
+        {"$set": {
+            "data.summary": improved_summary.strip(),
+            "data.experience": improved_experiences,
+            "updated_at": resume['updated_at']
+        }}
+    )
+    
+    return {
+        "message": "Resume auto-fixed successfully",
+        "improved_summary": improved_summary.strip(),
+        "improved_count": len(improved_experiences) + 1
+    }
 
 @api_router.get("/jobs/search")
 async def search_jobs(query: str, location: str = "", limit: int = 10):
