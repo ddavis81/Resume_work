@@ -39,8 +39,8 @@ logger = logging.getLogger(__name__)
 # Models
 class SkillInput(BaseModel):
     name: str
-    proficiency: str = "intermediate"
-    years: float = 0
+    proficiency: Optional[str] = "intermediate"
+    years: Optional[float] = 0
 
 class Experience(BaseModel):
     title: str
@@ -137,9 +137,11 @@ async def parse_resume_with_ai(text: str) -> Dict[str, Any]:
 - location
 - title (job title/role)
 - summary (professional summary)
-- skills (array of skill objects with name, proficiency, years)
+- skills (array of skill objects with name, proficiency (optional), years (optional))
 - experience (array with title, company, duration, description)
 - education (array with degree, institution, year)
+
+Important: For skills, if proficiency or years are not mentioned, omit those fields or set them as empty.
 
 Resume text:
 {text}
@@ -160,6 +162,24 @@ Respond with ONLY valid JSON, no markdown formatting."""
             response_text = response_text[:-3]
         
         parsed = json.loads(response_text.strip())
+        
+        # Clean up skills data - remove None values
+        if 'skills' in parsed and isinstance(parsed['skills'], list):
+            cleaned_skills = []
+            for skill in parsed['skills']:
+                if isinstance(skill, dict) and skill.get('name'):
+                    cleaned_skill = {'name': skill['name']}
+                    if skill.get('proficiency'):
+                        cleaned_skill['proficiency'] = skill['proficiency']
+                    else:
+                        cleaned_skill['proficiency'] = 'intermediate'
+                    if skill.get('years') is not None:
+                        cleaned_skill['years'] = float(skill['years'])
+                    else:
+                        cleaned_skill['years'] = 0
+                    cleaned_skills.append(cleaned_skill)
+            parsed['skills'] = cleaned_skills
+        
         return parsed
     except Exception as e:
         logger.error(f"JSON parsing error: {str(e)}, response: {response}")
@@ -249,26 +269,46 @@ async def create_resume(resume_data: ResumeData, user_id: str = "default"):
 
 @api_router.post("/resume/upload")
 async def upload_resume(file: UploadFile = File(...), user_id: str = Form("default")):
-    file_bytes = await file.read()
-    
-    if file.filename.endswith('.pdf'):
-        text = extract_text_from_pdf(file_bytes)
-    elif file.filename.endswith('.docx'):
-        text = extract_text_from_docx(file_bytes)
-    else:
-        raise HTTPException(status_code=400, detail="Only PDF and DOCX files are supported")
-    
-    parsed_data = await parse_resume_with_ai(text)
-    
-    resume_data = ResumeData(**parsed_data)
-    resume = Resume(user_id=user_id, data=resume_data)
-    
-    doc = resume.model_dump()
-    doc['created_at'] = doc['created_at'].isoformat()
-    doc['updated_at'] = doc['updated_at'].isoformat()
-    
-    await db.resumes.insert_one(doc)
-    return {"id": resume.id, "data": parsed_data, "message": "Resume uploaded and parsed successfully"}
+    try:
+        file_bytes = await file.read()
+        
+        if file.filename.endswith('.pdf'):
+            text = extract_text_from_pdf(file_bytes)
+        elif file.filename.endswith('.docx'):
+            text = extract_text_from_docx(file_bytes)
+        else:
+            raise HTTPException(status_code=400, detail="Only PDF and DOCX files are supported")
+        
+        if not text or len(text.strip()) < 50:
+            raise HTTPException(status_code=400, detail="Could not extract sufficient text from the file")
+        
+        parsed_data = await parse_resume_with_ai(text)
+        
+        # Ensure required fields exist with defaults
+        parsed_data.setdefault('full_name', 'Unknown')
+        parsed_data.setdefault('email', '')
+        parsed_data.setdefault('phone', '')
+        parsed_data.setdefault('location', '')
+        parsed_data.setdefault('title', 'Professional')
+        parsed_data.setdefault('summary', '')
+        parsed_data.setdefault('skills', [])
+        parsed_data.setdefault('experience', [])
+        parsed_data.setdefault('education', [])
+        
+        resume_data = ResumeData(**parsed_data)
+        resume = Resume(user_id=user_id, data=resume_data)
+        
+        doc = resume.model_dump()
+        doc['created_at'] = doc['created_at'].isoformat()
+        doc['updated_at'] = doc['updated_at'].isoformat()
+        
+        await db.resumes.insert_one(doc)
+        return {"id": resume.id, "data": parsed_data, "message": "Resume uploaded and parsed successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Upload error: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to process resume: {str(e)}")
 
 @api_router.get("/resume/{resume_id}")
 async def get_resume(resume_id: str):
