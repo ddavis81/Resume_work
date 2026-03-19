@@ -464,10 +464,78 @@ async def match_jobs(resume_id: str, query: str = "", location: str = "", limit:
 @api_router.get("/templates")
 async def get_templates():
     return [
-        {"id": "modern", "name": "Modern Professional", "preview": "/templates/modern.png"},
-        {"id": "classic", "name": "Classic Elegant", "preview": "/templates/classic.png"},
-        {"id": "minimal", "name": "Minimal Clean", "preview": "/templates/minimal.png"},
-        {"id": "creative", "name": "Creative Bold", "preview": "/templates/creative.png"}
+        {
+            "id": "tech-modern",
+            "name": "Tech Professional",
+            "career": "Technology & Software",
+            "description": "Modern template optimized for software engineers, developers, and tech roles",
+            "features": ["Skills-first layout", "Project showcase", "GitHub integration ready"],
+            "color": "#3B82F6",
+            "preview": "/templates/tech.png"
+        },
+        {
+            "id": "healthcare-clean",
+            "name": "Healthcare Professional",
+            "career": "Healthcare & Medical",
+            "description": "Clean, professional format for doctors, nurses, and medical professionals",
+            "features": ["Certifications prominent", "Clinical experience focus", "License display"],
+            "color": "#10B981",
+            "preview": "/templates/healthcare.png"
+        },
+        {
+            "id": "business-executive",
+            "name": "Business Executive",
+            "career": "Business & Finance",
+            "description": "Executive format for business leaders, managers, and finance professionals",
+            "features": ["Achievement metrics", "Leadership emphasis", "MBA-optimized"],
+            "color": "#6366F1",
+            "preview": "/templates/business.png"
+        },
+        {
+            "id": "creative-portfolio",
+            "name": "Creative Professional",
+            "career": "Design & Creative",
+            "description": "Eye-catching design for designers, artists, and creative professionals",
+            "features": ["Portfolio links", "Visual hierarchy", "Unique layout"],
+            "color": "#EC4899",
+            "preview": "/templates/creative.png"
+        },
+        {
+            "id": "sales-results",
+            "name": "Sales & Marketing",
+            "career": "Sales & Marketing",
+            "description": "Results-driven format highlighting achievements and revenue impact",
+            "features": ["Quota attainment", "Revenue metrics", "Campaign results"],
+            "color": "#F59E0B",
+            "preview": "/templates/sales.png"
+        },
+        {
+            "id": "education-academic",
+            "name": "Education Professional",
+            "career": "Education & Teaching",
+            "description": "Academic format for teachers, professors, and education professionals",
+            "features": ["Publications section", "Teaching philosophy", "Curriculum vitae style"],
+            "color": "#8B5CF6",
+            "preview": "/templates/education.png"
+        },
+        {
+            "id": "legal-formal",
+            "name": "Legal Professional",
+            "career": "Legal & Law",
+            "description": "Formal, traditional layout for lawyers, paralegals, and legal professionals",
+            "features": ["Bar admission", "Case experience", "Traditional format"],
+            "color": "#0F172A",
+            "preview": "/templates/legal.png"
+        },
+        {
+            "id": "engineering-technical",
+            "name": "Engineering Professional",
+            "career": "Engineering",
+            "description": "Technical format for mechanical, civil, and electrical engineers",
+            "features": ["Technical skills", "Project details", "PE license section"],
+            "color": "#0891B2",
+            "preview": "/templates/engineering.png"
+        }
     ]
 
 app.include_router(api_router)
