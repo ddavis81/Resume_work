@@ -127,6 +127,12 @@ class JobMatch(BaseModel):
     match_percentage: float
     url: str
 
+class JobPostingInput(BaseModel):
+    job_title: str
+    company: str
+    job_description: str
+    user_profile: Optional[Dict] = None
+
 class AutoFixRequest(BaseModel):
     resume_id: str
 
@@ -649,6 +655,90 @@ async def match_jobs(resume_id: str, query: str = "", location: str = "", limit:
     
     matches.sort(key=lambda x: x.match_score, reverse=True)
     return matches[:limit]
+
+@api_router.post("/resume/generate-for-job")
+async def generate_resume_for_job(job_input: JobPostingInput, current_user: User = Depends(get_current_user)):
+    """Generate a tailored resume based on a job posting"""
+    chat = await get_llm_chat()
+    
+    prompt = f"""You are an expert resume writer. Analyze this job posting and create a perfectly tailored resume.
+
+Job Title: {job_input.job_title}
+Company: {job_input.company}
+Job Description:
+{job_input.job_description}
+
+Create a professional resume optimized for this specific job. Return a JSON object with:
+- full_name: "{current_user.full_name}"
+- email: "{current_user.email}"
+- phone: ""
+- location: ""
+- title: (A professional title matching this job)
+- summary: (A compelling 3-4 sentence summary highlighting relevant experience for THIS job)
+- skills: (Array of 8-12 skills directly relevant to this job posting, each with name, proficiency level, and years)
+- experience: (3-4 relevant work experiences with strong action verbs and quantifiable achievements matching the job requirements)
+- education: (Relevant education entries)
+
+Make the resume ATS-friendly and specifically highlight qualifications matching the job description.
+Respond with ONLY valid JSON, no markdown."""
+    
+    message = UserMessage(text=prompt)
+    response = await chat.send_message(message)
+    
+    try:
+        import json
+        response_text = response.strip()
+        if response_text.startswith("```json"):
+            response_text = response_text[7:]
+        if response_text.startswith("```"):
+            response_text = response_text[3:]
+        if response_text.endswith("```"):
+            response_text = response_text[:-3]
+        
+        parsed = json.loads(response_text.strip())
+        
+        # Clean up skills data
+        if 'skills' in parsed and isinstance(parsed['skills'], list):
+            cleaned_skills = []
+            for skill in parsed['skills']:
+                if isinstance(skill, dict) and skill.get('name'):
+                    cleaned_skill = {'name': skill['name']}
+                    cleaned_skill['proficiency'] = skill.get('proficiency', 'intermediate')
+                    cleaned_skill['years'] = float(skill.get('years', 0))
+                    cleaned_skills.append(cleaned_skill)
+            parsed['skills'] = cleaned_skills
+        
+        # Set defaults for missing fields
+        parsed.setdefault('phone', '')
+        parsed.setdefault('location', '')
+        parsed.setdefault('skills', [])
+        parsed.setdefault('experience', [])
+        parsed.setdefault('education', [])
+        
+        # Create resume
+        resume_data = ResumeData(**parsed)
+        resume = Resume(user_id=current_user.id, data=resume_data)
+        
+        doc = resume.model_dump()
+        doc['created_at'] = doc['created_at'].isoformat()
+        doc['updated_at'] = doc['updated_at'].isoformat()
+        doc['job_posting'] = {
+            'title': job_input.job_title,
+            'company': job_input.company,
+            'description': job_input.job_description
+        }
+        
+        await db.resumes.insert_one(doc)
+        
+        return {
+            "id": resume.id,
+            "data": parsed,
+            "message": f"Resume tailored for {job_input.job_title} at {job_input.company}"
+        }
+    
+    except Exception as e:
+        logger.error(f"Resume generation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate resume: {str(e)}")
 
 @api_router.get("/templates")
 async def get_templates():

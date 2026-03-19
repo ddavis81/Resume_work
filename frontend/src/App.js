@@ -6,6 +6,7 @@ import Upload from "./pages/Upload";
 import Editor from "./pages/Editor";
 import Jobs from "./pages/Jobs";
 import Templates from "./pages/Templates";
+import JobTailoredResume from "./pages/JobTailoredResume";
 import { Toaster } from "./components/ui/sonner";
 import { AuthProvider } from "./context/AuthContext";
 
@@ -18,6 +19,7 @@ function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/builder" element={<Builder />} />
             <Route path="/upload" element={<Upload />} />
+            <Route path="/job-tailored" element={<JobTailoredResume />} />
             <Route path="/editor/:id" element={<Editor />} />
             <Route path="/jobs" element={<Jobs />} />
             <Route path="/templates" element={<Templates />} />

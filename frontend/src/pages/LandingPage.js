@@ -16,6 +16,11 @@ const LandingPage = () => {
       description: "Create professional resumes from scratch with intelligent suggestions and formatting."
     },
     {
+      icon: <Sparkles className="w-8 h-8" />,
+      title: "Job-Tailored Resumes",
+      description: "Paste a job posting and AI creates a perfectly matched resume optimized for that position."
+    },
+    {
       icon: <Upload className="w-8 h-8" />,
       title: "Smart Resume Analysis",
       description: "Upload your existing resume and get instant AI-powered improvements and optimization."
@@ -24,11 +29,6 @@ const LandingPage = () => {
       icon: <Briefcase className="w-8 h-8" />,
       title: "Job Matching Engine",
       description: "Find jobs that match your skills and experience with our intelligent matching algorithm."
-    },
-    {
-      icon: <Sparkles className="w-8 h-8" />,
-      title: "Multiple Templates",
-      description: "Choose from professional, modern templates optimized for ATS systems."
     }
   ];
 
@@ -107,6 +107,11 @@ const LandingPage = () => {
                 <Link to="/builder">
                   <Button data-testid="hero-build-resume-btn" size="lg" className="bg-blue-600 hover:bg-blue-700 glow-button text-lg px-8 py-6">
                     Build Resume <ArrowRight className="ml-2 w-5 h-5" />
+                  </Button>
+                </Link>
+                <Link to="/job-tailored">
+                  <Button data-testid="hero-job-tailored-btn" size="lg" className="bg-emerald-600 hover:bg-emerald-700 glow-button text-lg px-8 py-6">
+                    <Sparkles className="mr-2 w-5 h-5" /> Tailor for Job
                   </Button>
                 </Link>
                 <Link to="/upload">
