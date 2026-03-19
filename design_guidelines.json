@@ -1,0 +1,161 @@
+{
+  "design_system": {
+    "identity": {
+      "persona": "E1: The Anti-AI Designer",
+      "mission": "Create a high-performance, authoritative career tool that feels like a command center, not a generic form filler.",
+      "principles": [
+        "Fusion over Imitation: Mix 'Swiss Graphic Design' clarity with 'Fintech' data density.",
+        "Emotion First: The user is stressed; the design must project 'Calm Confidence' and 'Precision'.",
+        "Content is King: The resume is the hero. The UI recedes to let the document shine.",
+        "Zoom In: Use focus modes for editing to eliminate distraction.",
+        "Negative Space: Use whitespace to denote luxury and clarity in the resume previews."
+      ]
+    },
+    "theme_strategy": {
+      "mode": "hybrid",
+      "logic": "Context-Dependent Theme Switching",
+      "rules": [
+        "Dashboard & Home: DARK MODE (Deep Obsidian). Purpose: Reduces eye strain, feels 'Tech/AI' powered, modern.",
+        "Resume Builder/Editor: LIGHT MODE (Paper White). Purpose: WYSIWYG accuracy. Resumes are white paper; the UI must reflect the final output context.",
+        "Landing Page: Dynamic (Dark Hero -> Light Social Proof -> Dark CTA)."
+      ]
+    },
+    "typography": {
+      "primary_font": "Manrope",
+      "secondary_font": "Inter",
+      "usage": {
+        "headings": "Manrope, font-weight: 700/800, tracking-tight. Use for H1-H3 and major UI labels.",
+        "body": "Inter, font-weight: 400/500. Use for all resume content, form inputs, and dense text.",
+        "mono": "JetBrains Mono. Use for AI code snippets or 'ATS Keyword' tags."
+      },
+      "scale": {
+        "h1": "text-5xl md:text-6xl lg:text-7xl leading-none",
+        "h2": "text-3xl md:text-4xl leading-tight",
+        "h3": "text-2xl font-bold",
+        "body": "text-base leading-relaxed text-muted-foreground",
+        "small": "text-sm font-medium tracking-wide uppercase text-muted-foreground"
+      }
+    },
+    "colors": {
+      "archetype": "The Performance Pro (Archetype 2)",
+      "palette": {
+        "primary": {
+          "name": "Deep Obsidian",
+          "value": "#0F172A",
+          "usage": "Main background for Dashboard, Sidebar, Footer."
+        },
+        "secondary": {
+          "name": "Paper White",
+          "value": "#FFFFFF",
+          "usage": "Resume Preview background, Cards in Light Mode."
+        },
+        "accent": {
+          "name": "Electric Blue",
+          "value": "#3B82F6",
+          "usage": "Primary Buttons, Active States, AI 'Magic' Actions.",
+          "hover": "#2563EB"
+        },
+        "success": {
+          "name": "Growth Emerald",
+          "value": "#10B981",
+          "usage": "High Match Score, Success Toasts."
+        },
+        "warning": {
+          "name": "Alert Amber",
+          "value": "#F59E0B",
+          "usage": "Resume Improvement Suggestions."
+        },
+        "surface": {
+          "dark": "#1E293B",
+          "light": "#F8FAFC"
+        }
+      },
+      "gradients": {
+        "hero_glow": "radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.15), transparent 70%)",
+        "ai_beam": "linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.5), transparent)"
+      }
+    },
+    "components": {
+      "buttons": {
+        "primary": "bg-blue-600 hover:bg-blue-700 text-white shadow-[0_0_20px_rgba(59,130,246,0.3)] rounded-lg font-semibold px-8 py-3 transition-all active:scale-95",
+        "secondary": "bg-transparent border border-slate-700 text-slate-300 hover:border-slate-500 hover:text-white rounded-lg px-6 py-3",
+        "ghost": "text-slate-400 hover:text-white hover:bg-slate-800/50 rounded-md px-4 py-2"
+      },
+      "cards": {
+        "dashboard": "bg-slate-900 border border-slate-800 hover:border-blue-500/30 transition-colors p-6 rounded-xl shadow-lg",
+        "resume_preview": "bg-white text-slate-900 shadow-2xl border border-slate-200 aspect-[1/1.41] transform scale-[0.8] origin-top"
+      },
+      "inputs": {
+        "default": "bg-slate-950 border-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-md h-12 px-4 text-slate-200 placeholder:text-slate-600 transition-all"
+      },
+      "layout_wrappers": {
+        "dashboard_grid": "grid grid-cols-1 md:grid-cols-12 gap-6 p-6 max-w-[1600px] mx-auto",
+        "split_screen": "grid grid-cols-1 lg:grid-cols-2 h-screen overflow-hidden"
+      }
+    },
+    "layout_strategies": {
+      "landing_page": {
+        "grid": "Mode A: The Tetris Grid",
+        "hero": "Asymmetric split. Left: Big Text (60%). Right: Floating 3D/Abstract Elements (40%).",
+        "features": "Bento Grid (3x3). Cards with 'Tracing Beam' hover effects."
+      },
+      "resume_builder": {
+        "structure": "Split View",
+        "left_panel": "Scrollable Form Area. Dark/Gray theme. 'Input Mode'.",
+        "right_panel": "Sticky Preview Area. Light theme. 'Output Mode'. Zoom controls.",
+        "mobile": "Tabbed view (Edit vs Preview)."
+      },
+      "dashboard": {
+        "grid": "Mode B: High Density",
+        "widgets": [
+          "Profile Summary (Col 1)",
+          "Job Match Score (Col 2-3)",
+          "Application Tracker (Col 4)",
+          "Recent Job Feed (Row 2, Full Width)"
+        ]
+      }
+    },
+    "assets": {
+      "images": {
+        "hero_bg": "https://images.unsplash.com/photo-1765371513492-264506c3ad09?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzh8MHwxfHNlYXJjaHwzfHxtb2Rlcm4lMjBvZmZpY2UlMjBtaW5pbWFsaXN0JTIwd29ya3NwYWNlfGVufDB8fHx8MTc3Mzk0Nzg4OXww&ixlib=rb-4.1.0&q=85",
+        "office_interior": "https://images.unsplash.com/photo-1772751541531-e084e8f56630?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzh8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBvZmZpY2UlMjBtaW5pbWFsaXN0JTIwd29ya3NwYWNlfGVufDB8fHx8MTc3Mzk0Nzg4OXww&ixlib=rb-4.1.0&q=85",
+        "avatars": [
+          "https://images.unsplash.com/photo-1762522926157-bcc04bf0b10a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MTN8MHwxfHNlYXJjaHw0fHxwcm9mZXNzaW9uYWwlMjBoZWFkc2hvdCUyMHBvcnRyYWl0fGVufDB8fHx8MTc3Mzk0Njg5MHww&ixlib=rb-4.1.0&q=85",
+          "https://images.pexels.com/photos/30004323/pexels-photo-30004323.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+          "https://images.pexels.com/photos/30004324/pexels-photo-30004324.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+        ],
+        "logos": [
+          "https://images.unsplash.com/photo-1765097715917-c3b39538ec24?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1ODh8MHwxfHNlYXJjaHw0fHxtaW5pbWFsaXN0JTIwZ2VvbWV0cmljJTIwbG9nbyUyMGRlc2lnbnxlbnwwfHx8fDE3NzM5NDc4OTl8MA&ixlib=rb-4.1.0&q=85",
+          "https://images.unsplash.com/photo-1764601841441-34ebb3d42a78?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1ODh8MHwxfHNlYXJjaHwyfHxtaW5pbWFsaXN0JTIwZ2VvbWV0cmljJTIwbG9nbyUyMGRlc2lnbnxlbnwwfHx8fDE3NzM5NDc4OTl8MA&ixlib=rb-4.1.0&q=85"
+        ],
+        "templates": [
+          "https://images.unsplash.com/photo-1693045181224-9fc2f954f054?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODh8MHwxfHNlYXJjaHwzfHxjbGVhbiUyMHJlc3VtZSUyMGN2JTIwZGVzaWduJTIwbGF5b3V0JTIwcGFwZXJ8ZW58MHx8fHwxNzczOTQ3ODkxfDA&ixlib=rb-4.1.0&q=85",
+          "https://images.unsplash.com/photo-1693045181178-d5d83fb070c8?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODh8MHwxfHNlYXJjaHw0fHxjbGVhbiUyMHJlc3VtZSUyMGN2JTIwZGVzaWduJTIwbGF5b3V0JTIwcGFwZXJ8ZW58MHx8fHwxNzczOTQ3ODkxfDA&ixlib=rb-4.1.0&q=85"
+        ]
+      },
+      "icons": "Use 'Lucide React' for all UI icons. Use 'Simple Icons' (via react-icons) for brand logos (LinkedIn, GitHub).",
+      "animations": {
+        "library": "Framer Motion",
+        "presets": {
+          "fade_up": { "initial": { "opacity": 0, "y": 20 }, "animate": { "opacity": 1, "y": 0 }, "transition": { "duration": 0.5 } },
+          "hover_scale": { "scale": 1.05, "transition": { "type": "spring", "stiffness": 300 } }
+        }
+      }
+    },
+    "accessibility": {
+      "rules": [
+        "Contrast: Ensure 4.5:1 ratio for all text.",
+        "Focus: Visible focus rings on all interactive elements (Blue-500).",
+        "Semantic HTML: Use <main>, <nav>, <article>, <section>.",
+        "Labels: Aria-labels for icon-only buttons."
+      ]
+    },
+    "universal_guidelines": [
+      "Avoid 'AI Slop': No generic gradients. No centered text blocks without purpose.",
+      "Micro-Interactions: Every button must click/scale. Every list item must fade in.",
+      "Data-TestID: All interactive elements must have data-testid attributes.",
+      "Glassmorphism: Use backdrop-blur-xl for sticky navs.",
+      "Toast: Use 'sonner' for notifications."
+    ]
+  }
+}
