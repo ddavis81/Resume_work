@@ -196,7 +196,7 @@ const LandingPage = () => {
           </div>
           <p className="mb-2">© 2026 Resume works. Powered by AI. Built for Success.</p>
           <p className="text-sm text-slate-500">
-            Created by <span className="text-blue-400 font-semibold">Your Name</span>
+            Created by <span className="text-blue-400 font-semibold">D.D.Davis</span>
           </p>
         </div>
       </footer>
