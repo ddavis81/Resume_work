@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileText, ArrowLeft, Sparkles, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,8 +15,9 @@ const API = `${BACKEND_URL}/api`;
 
 const JobTailoredResume = () => {
   const navigate = useNavigate();
-  const { token, isAuthenticated } = useAuth();
+  const { token, isAuthenticated, user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   
   const [formData, setFormData] = useState({
     job_title: '',
@@ -24,10 +25,16 @@ const JobTailoredResume = () => {
     job_description: ''
   });
 
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setShowAuthPrompt(true);
+    }
+  }, [isAuthenticated]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !token) {
       toast.error('Please sign in to generate a tailored resume');
       navigate('/');
       return;
@@ -42,7 +49,12 @@ const JobTailoredResume = () => {
       navigate(`/editor/${response.data.id}`);
     } catch (error) {
       console.error(error);
-      toast.error(error.response?.data?.detail || 'Failed to generate resume');
+      if (error.response?.status === 401) {
+        toast.error('Please sign in again - session expired');
+        navigate('/');
+      } else {
+        toast.error(error.response?.data?.detail || 'Failed to generate resume');
+      }
     } finally {
       setLoading(false);
     }
@@ -75,6 +87,13 @@ const JobTailoredResume = () => {
           <p className="text-xl text-slate-400">
             Paste a job posting and our AI will create a perfectly matched resume
           </p>
+          {showAuthPrompt && (
+            <div className="mt-4 p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg inline-block">
+              <p className="text-amber-400 text-sm">
+                ⚠️ Please <button onClick={() => navigate('/')} className="underline font-semibold">sign in</button> to use this feature
+              </p>
+            </div>
+          )}
         </div>
 
         <Card className="bg-slate-900 border-slate-800">
