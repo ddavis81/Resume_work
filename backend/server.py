@@ -591,38 +591,111 @@ Provide ONLY the improved description in 2-3 bullet points."""
 
 @api_router.get("/jobs/search")
 async def search_jobs(query: str, location: str = "", limit: int = 10):
-    # Using mock data for demo - integrate with real job API
-    mock_jobs = [
-        {
-            "job_id": "job-1",
-            "title": f"{query} Engineer",
-            "company": "TechCorp",
-            "location": location or "Remote",
-            "description": f"We are seeking an experienced {query} professional with strong technical skills in Python, JavaScript, React, and cloud technologies. Join our innovative team!",
-            "employment_type": "Full-time",
-            "url": "https://example.com/job1"
-        },
-        {
-            "job_id": "job-2",
-            "title": f"Senior {query} Developer",
-            "company": "Innovation Labs",
-            "location": location or "San Francisco, CA",
-            "description": f"Senior {query} role requiring expertise in modern web technologies, AWS, Docker, and agile methodologies. Competitive salary and benefits.",
-            "employment_type": "Full-time",
-            "url": "https://example.com/job2"
-        },
-        {
-            "job_id": "job-3",
-            "title": f"{query} Specialist",
-            "company": "Digital Solutions",
-            "location": location or "New York, NY",
-            "description": f"Looking for a {query} specialist with Node.js, TypeScript, MongoDB experience. Great team culture and remote work options.",
-            "employment_type": "Contract",
-            "url": "https://example.com/job3"
-        }
-    ]
+    """
+    Search for current job postings - returns realistic mock data
     
-    return mock_jobs[:limit]
+    TODO: Replace with real job API integration (JSearch, Google Jobs API, or Adzuna)
+    To integrate real API:
+    1. Install httpx: pip install httpx
+    2. Get API key from RapidAPI or provider
+    3. Replace mock data with: async with httpx.AsyncClient() as client: ...
+    4. Parse real API response into same format
+    """
+    
+    # Realistic job data based on search query
+    job_templates = {
+        "software": [
+            {
+                "job_id": "tech_001",
+                "title": f"{query} - Mid Level",
+                "company": "Google",
+                "location": location or "Mountain View, CA",
+                "description": f"We're looking for a talented {query} to join our growing team. You'll work on cutting-edge technologies including Python, JavaScript, React, and cloud infrastructure. Responsibilities include developing scalable applications, collaborating with cross-functional teams, and contributing to our innovation culture. Requirements: 3+ years experience, strong problem-solving skills, excellent communication.",
+                "employment_type": "Full-time",
+                "salary_range": "$120,000 - $180,000",
+                "posted_date": "2 days ago",
+                "url": "https://careers.google.com/jobs/tech_001",
+                "required_skills": ["Python", "JavaScript", "React", "AWS", "Docker"]
+            },
+            {
+                "job_id": "tech_002",
+                "title": f"Senior {query}",
+                "company": "Microsoft",
+                "location": location or "Seattle, WA (Remote Available)",
+                "description": f"Join Microsoft's engineering team as a Senior {query}. Lead technical initiatives, mentor junior developers, and architect scalable solutions. Work with Azure, .NET, TypeScript, and modern DevOps practices. We're looking for someone with 5+ years of experience who can drive innovation and technical excellence.",
+                "employment_type": "Full-time",
+                "salary_range": "$150,000 - $220,000",
+                "posted_date": "1 week ago",
+                "url": "https://careers.microsoft.com/jobs/tech_002",
+                "required_skills": ["C#", ".NET", "Azure", "TypeScript", "Kubernetes"]
+            },
+            {
+                "job_id": "tech_003",
+                "title": f"{query} (Remote)",
+                "company": "Amazon Web Services",
+                "location": "Remote - Worldwide",
+                "description": f"AWS is hiring a {query} to build next-generation cloud services. You'll design and implement distributed systems at massive scale. Strong background in Python, Go, or Java required. Experience with microservices, containerization, and AWS services preferred. Competitive compensation including stock options.",
+                "employment_type": "Full-time",
+                "salary_range": "$140,000 - $200,000",
+                "posted_date": "3 days ago",
+                "url": "https://amazon.jobs/tech_003",
+                "required_skills": ["Python", "Go", "AWS", "Microservices", "Terraform"]
+            }
+        ],
+        "default": [
+            {
+                "job_id": f"{query.lower().replace(' ', '_')}_001",
+                "title": f"{query} Professional",
+                "company": "Tech Innovations Inc",
+                "location": location or "San Francisco, CA",
+                "description": f"Exciting opportunity for a {query} professional. Join a dynamic team working on innovative projects. We offer competitive salary, great benefits, and career growth opportunities. Requirements include relevant experience, strong communication skills, and passion for technology.",
+                "employment_type": "Full-time",
+                "salary_range": "$90,000 - $140,000",
+                "posted_date": "5 days ago",
+                "url": f"https://techinnov.com/jobs/{query.lower().replace(' ', '_')}_001",
+                "required_skills": ["Problem Solving", "Communication", "Team Collaboration"]
+            },
+            {
+                "job_id": f"{query.lower().replace(' ', '_')}_002",
+                "title": f"Senior {query} Specialist",
+                "company": "Digital Solutions Corp",
+                "location": location or "New York, NY (Hybrid)",
+                "description": f"We're seeking an experienced {query} specialist to lead key initiatives. You'll work with cutting-edge technology, mentor team members, and drive business impact. Requires 5+ years of experience and proven track record of success.",
+                "employment_type": "Full-time",
+                "salary_range": "$110,000 - $160,000",
+                "posted_date": "1 week ago",
+                "url": f"https://digitalsolutions.com/careers/{query.lower().replace(' ', '_')}_002",
+                "required_skills": ["Leadership", "Technical Expertise", "Strategic Thinking"]
+            },
+            {
+                "job_id": f"{query.lower().replace(' ', '_')}_003",
+                "title": f"{query} - Contract Position",
+                "company": "StartupXYZ",
+                "location": location or "Remote",
+                "description": f"Join our fast-growing startup as a {query} contractor. Work on exciting projects, flexible hours, and potential for full-time conversion. We're looking for self-motivated individuals who thrive in dynamic environments.",
+                "employment_type": "Contract",
+                "salary_range": "$80 - $120/hour",
+                "posted_date": "2 days ago",
+                "url": f"https://startupxyz.io/jobs/{query.lower().replace(' ', '_')}_003",
+                "required_skills": ["Adaptability", "Self-Management", "Technical Skills"]
+            }
+        ]
+    }
+    
+    # Determine which template set to use
+    query_lower = query.lower()
+    if any(word in query_lower for word in ["software", "engineer", "developer", "programmer"]):
+        jobs = job_templates["software"]
+    else:
+        jobs = job_templates["default"]
+    
+    # Add more variety based on location
+    if location:
+        for job in jobs:
+            if "Remote" not in job["location"]:
+                job["location"] = location
+    
+    return jobs[:limit]
 
 @api_router.post("/jobs/match")
 async def match_jobs(resume_id: str, query: str = "", location: str = "", limit: int = 10):
