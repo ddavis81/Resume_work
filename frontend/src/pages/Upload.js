@@ -4,6 +4,7 @@ import { useDropzone } from "react-dropzone";
 import { FileText, Upload as UploadIcon, ArrowLeft, FileCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
 import { toast } from "sonner";
 
@@ -12,6 +13,7 @@ const API = `${BACKEND_URL}/api`;
 
 const Upload = () => {
   const navigate = useNavigate();
+  const { token } = useAuth();
   const [uploading, setUploading] = useState(false);
   const [file, setFile] = useState(null);
 
@@ -43,17 +45,29 @@ const Upload = () => {
     setUploading(true);
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('user_id', 'default');
 
     try {
-      const response = await axios.post(`${API}/resume/upload`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      const headers = {
+        'Content-Type': 'multipart/form-data'
+      };
+      
+      // Add auth token if available
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const response = await axios.post(`${API}/resume/upload`, formData, { headers });
       toast.success("Resume uploaded and analyzed!");
       navigate(`/editor/${response.data.id}`);
     } catch (error) {
-      console.error(error);
-      toast.error(error.response?.data?.detail || "Failed to upload resume");
+      console.error("Upload error:", error);
+      const errorMsg = error.response?.data?.detail || error.message || "Failed to upload resume";
+      toast.error(errorMsg);
+      
+      // Log more details for debugging
+      if (error.response) {
+        console.error("Error response:", error.response.status, error.response.data);
+      }
     } finally {
       setUploading(false);
     }

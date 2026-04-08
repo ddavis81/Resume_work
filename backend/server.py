@@ -452,10 +452,19 @@ async def create_resume(resume_data: ResumeData, current_user: User = Depends(ge
     return {"id": resume.id, "message": "Resume created successfully"}
 
 @api_router.post("/resume/upload")
-async def upload_resume(file: UploadFile = File(...), user_id: str = Form("default")):
+async def upload_resume(
+    file: UploadFile = File(...),
+    current_user: Optional[User] = Depends(lambda: None)  # Optional auth
+):
+    """Upload resume file (PDF, DOC, DOCX, TXT, RTF) and parse with AI"""
     try:
+        # Determine user_id
+        user_id = current_user.id if current_user else "guest"
+        
         file_bytes = await file.read()
         filename_lower = file.filename.lower()
+        
+        logger.info(f"Processing upload: {file.filename} ({len(file_bytes)} bytes)")
         
         # Determine file type and extract text
         if filename_lower.endswith('.pdf'):
@@ -473,6 +482,8 @@ async def upload_resume(file: UploadFile = File(...), user_id: str = Form("defau
                 status_code=400, 
                 detail="Unsupported file format. Please upload PDF, DOC, DOCX, TXT, or RTF files."
             )
+        
+        logger.info(f"Extracted {len(text)} characters from file")
         
         if not text or len(text.strip()) < 50:
             raise HTTPException(
@@ -501,6 +512,8 @@ async def upload_resume(file: UploadFile = File(...), user_id: str = Form("defau
         doc['updated_at'] = doc['updated_at'].isoformat()
         
         await db.resumes.insert_one(doc)
+        logger.info(f"Resume created successfully with ID: {resume.id}")
+        
         return {"id": resume.id, "data": parsed_data, "message": "Resume uploaded and parsed successfully"}
     except HTTPException:
         raise
